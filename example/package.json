@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "anyboxer": "0.0.1",
-    "express": "^4.10.7"
+    "express": "^4.10.7",
+    "jade": "^1.8.2"
   }
 }

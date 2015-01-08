@@ -1,20 +1,23 @@
 var express = require('express');
 var app = express();
 
+app.use("/js", express.static(__dirname + '/client'));
+
 var anyBoxer = require('anyboxer');
 var boxer = new anyBoxer;
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
+    res.render('index.jade', {name: 'mi'});
 });
 
-app.get('/boxer-test', function(req, res) {
-    var lineString = [[1, 1], [2, 2]];
+app.get('/anyboxer', function(req, res) {
+    var lineString = JSON.parse(req.query.path);
+
     var options = {
         data: {
             lineString: lineString
         },
-        fat: 2,
+        fat: 10,
         split: true
     };
     var boxes = boxer.getBoxes(options);
