@@ -3,7 +3,7 @@ var app = express();
 
 app.use("/js", express.static(__dirname + '/client'));
 
-var anyBoxer = require('anyboxer');
+var anyBoxer = require('../index');
 var boxer = new anyBoxer;
 
 app.get('/', function (req, res) {

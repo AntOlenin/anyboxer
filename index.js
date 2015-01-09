@@ -259,8 +259,6 @@ AnyBoxer.prototype.mergeLineStringBoxes = function(boxes) {
     var keys = Object.keys(groupBoxes);
     var mergedBoxes = [];
 
-//    debugger
-
     keys.forEach(function(key) {
         var oneGroup = groupBoxes[key];
         var box = AnyBoxer.prototype.mergeOneGroup(oneGroup);
