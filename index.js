@@ -43,7 +43,7 @@ AnyBoxer.prototype.getlineStringBoxes = function(lineString, fat) {
     var mainBox = this.getMainBox(lineString);
     var subBoxes = this.getSubBoxes(mainBox, fat);
     var intersectBoxes = this.filterIntersectBoxes(subBoxes, lineString);
-    var necessaryBoxes = this.createSiblingLineStringBoxes(intersectBoxes, this.cos(mainBox[0][0]), fat);
+    var necessaryBoxes = this.getNecessaryBoxes(intersectBoxes, subBoxes);
     var mergedBoxes = this.mergeLineStringBoxes(necessaryBoxes);
     return mergedBoxes;
 };
@@ -94,6 +94,7 @@ AnyBoxer.prototype.getSubBoxes = function(mainBox, fat) {
     var subBoxes = [];
 
     for (var j=0; j<columnAmount; j++) {
+        var oneLineSubBoxes = [];
         for (var k=0; k<rowAmount; k++) {
 
             var mainSwLat = mainSw[0];
@@ -111,8 +112,9 @@ AnyBoxer.prototype.getSubBoxes = function(mainBox, fat) {
             var subNe = [subNeLat, subNeLon];
             var subBox = [subSw, subNe];
 
-            subBoxes.push(subBox);
+            oneLineSubBoxes.push(subBox);
         }
+        subBoxes.push(oneLineSubBoxes);
     }
 
     return subBoxes;
@@ -125,17 +127,20 @@ AnyBoxer.prototype.getSubBoxes = function(mainBox, fat) {
 AnyBoxer.prototype.filterIntersectBoxes = function(boxes, lineString) {
     var intersectBoxes = [];
 
-    boxes.forEach(function(box) {
-        if (AnyBoxer.prototype.isIntersectOneBox(box, lineString)) {
-            intersectBoxes.push(box);
-        }
+    boxes.forEach(function(oneLineSubBoxes) {
+        var oneLineIntersectBoxes = [];
+        oneLineSubBoxes.forEach(function(box) {
+            if (AnyBoxer.prototype.isIntersectOneBox(box, lineString)) {
+                oneLineIntersectBoxes.push(box);
+            }
+        });
+        intersectBoxes.push(oneLineIntersectBoxes)
     });
 
     return intersectBoxes;
 };
 
 AnyBoxer.prototype.isIntersectOneBox = function(box, lineString) {
-
     var boxSides = [];
     var lineStringSides = [];
 
@@ -160,7 +165,6 @@ AnyBoxer.prototype.isIntersectOneBox = function(box, lineString) {
             }
         }
     }
-
 };
 
 AnyBoxer.prototype.isIntersectOneSide = function(boxSide, lineStringSide) {
@@ -182,68 +186,52 @@ AnyBoxer.prototype.isIntersectOneSide = function(boxSide, lineStringSide) {
     if ((v1*v2<0) && (v3*v4<0)) return true;
 };
 
+AnyBoxer.prototype.getNecessaryBoxes = function(intersectBoxes, subBoxes) {
+    var necessaryBoxes = [];
 
-/**
- * Когда мы из всех боксов извлекли только необходимые - нужно вокруг
- * каждого бокса добавить по одному дополнительному боксу, чтобы реальная
- * толщина захватываемой области удовлетворяла значению fat.
- *
- * Возвращает массив уникальных боксов.
- * */
-AnyBoxer.prototype.createSiblingLineStringBoxes = function(boxes, cosMainSw, fat) {
-    var oneHeight = (fat / this.EQUATOR_DEGREE_KM);
-    var oneWidth = ( fat / (this.EQUATOR_DEGREE_KM * cosMainSw));
+    for (var i=0; i<intersectBoxes.length; i++) {
+        var oneLineIntersectBoxes = intersectBoxes[i];
 
-    boxes.forEach(function(box) {
-        var swLat = box[0][0];
-        var swLon = box[0][1];
-        var neLat = box[1][0];
-        var neLon = box[1][1];
+        var line = subBoxes[i];
 
-        var nbox = [
-            [swLat + oneHeight, swLon],
-            [neLat + oneHeight, neLon]
-        ];
+        for (var k=0; k<oneLineIntersectBoxes.length; k++) {
+            var oneIntersectBox = oneLineIntersectBoxes[k];
+            var index = [i, line.indexOf(oneIntersectBox)]; // [1,0] строка и колонка в матрице
 
-        var nebox = [
-            [swLat + oneHeight, swLon + oneWidth],
-            [neLat + oneHeight, neLon + oneWidth]
-        ];
+            necessaryBoxes.push(oneIntersectBox);
+            this.pushSiblingsByIndex(subBoxes, index, necessaryBoxes);
+        }
+    }
 
-        var ebox = [
-            [swLat, swLon + oneWidth],
-            [neLat, neLon + oneWidth]
-        ];
+    return necessaryBoxes;
+};
 
-        var sebox = [
-            [swLat - oneHeight, swLon + oneWidth],
-            [neLat - oneHeight, neLon + oneWidth]
-        ];
+AnyBoxer.prototype.pushSiblingsByIndex = function(subBoxes, index, necessaryBoxes) {
+    var nbox = this.getOneByIndex(subBoxes, [index[0]+1, index[1]]);
+    var nebox = this.getOneByIndex(subBoxes, [index[0]+1, index[1]+1]);
+    var ebox = this.getOneByIndex(subBoxes, [index[0], index[1]+1]);
+    var sebox = this.getOneByIndex(subBoxes, [index[0]-1, index[1]+1]);
+    var sbox = this.getOneByIndex(subBoxes, [index[0]-1, index[1]]);
+    var swbox = this.getOneByIndex(subBoxes, [index[0]-1, index[1]-1]);
+    var wbox = this.getOneByIndex(subBoxes, [index[0], index[1]-1]);
+    var nwbox = this.getOneByIndex(subBoxes, [index[0]+1, index[1]-1]);
 
-        var sbox = [
-            [swLat - oneHeight, swLon],
-            [neLat - oneHeight, neLon]
-        ];
+    if (nbox) necessaryBoxes.push(nbox);
+    if (nebox) necessaryBoxes.push(nebox);
+    if (ebox) necessaryBoxes.push(ebox);
+    if (sebox) necessaryBoxes.push(sebox);
+    if (sbox) necessaryBoxes.push(sbox);
+    if (swbox) necessaryBoxes.push(swbox);
+    if (wbox) necessaryBoxes.push(wbox);
+    if (nwbox) necessaryBoxes.push(nwbox);
+};
 
-        var swbox = [
-            [swLat - oneHeight, swLon - oneWidth],
-            [neLat - oneHeight, neLon - oneWidth]
-        ];
-
-        var wbox = [
-            [swLat, swLon - oneWidth],
-            [neLat, neLon - oneWidth]
-        ];
-
-        var nwbox = [
-            [swLat + oneHeight, swLon - oneWidth],
-            [neLat + oneHeight, neLon - oneWidth]
-        ];
-
-        boxes.push(nbox, nebox, ebox, sebox, sbox, swbox, wbox, nwbox);
-    });
-
-    return boxes;
+AnyBoxer.prototype.getOneByIndex = function(subBoxes, index) {
+    var line = subBoxes[index[0]];
+    if (!line) return false;
+    var box = line[index[1]];
+    if (!box) return false;
+    return box;
 };
 
 AnyBoxer.prototype.mergeLineStringBoxes = function(boxes) {
@@ -289,9 +277,6 @@ AnyBoxer.prototype.mergeOneGroup = function(oneGroup) {
     ];
 };
 
-
-
-
 AnyBoxer.prototype.cos = function(degree) {
     return Math.cos( degree.toRadian() );
 };
@@ -300,8 +285,5 @@ Number.prototype.toRadian = function () {
     return this * Math.PI / 180;
 };
 
-Number.prototype.toDegree = function () {
-    return this * 180 / Math.PI;
-};
 
 module.exports = AnyBoxer;
