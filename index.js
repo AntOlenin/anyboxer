@@ -45,7 +45,7 @@ AnyBoxer.prototype.getlineStringBoxes = function(lineString, fat) {
     var subBoxes = this.getSubBoxes(mainBox, fat);
     var intersectBoxes = this.filterIntersectBoxes(subBoxes, lineString);
     var necessaryBoxes = this.getNecessaryBoxes(intersectBoxes, subBoxes);
-    var mergedBoxes = this.mergeLineStringBoxes(necessaryBoxes);
+    var mergedBoxes = this.mergeBoxes(necessaryBoxes);
     return mergedBoxes;
 };
 
@@ -256,7 +256,13 @@ AnyBoxer.prototype.getOneByIndex = function(subBoxes, index) {
     return box;
 };
 
-AnyBoxer.prototype.mergeLineStringBoxes = function(boxes) {
+AnyBoxer.prototype.mergeBoxes = function(necessaryBoxes) {
+    var verticalMergedBoxes = this.verticalMergeBoxes(necessaryBoxes);
+    var horisontalMergedBoxes = this.horisontalMergeBoxes(verticalMergedBoxes);
+    return horisontalMergedBoxes;
+};
+
+AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
     var groupBoxes = {};
 
     boxes.forEach(function(box) {
@@ -275,6 +281,35 @@ AnyBoxer.prototype.mergeLineStringBoxes = function(boxes) {
         mergedBoxes.push(box);
     });
 
+    return mergedBoxes;
+};
+
+AnyBoxer.prototype.horisontalMergeBoxes = function(boxes) {
+    var mergedBoxes = [];
+    var prevBox = null;
+
+    boxes.forEach(function(box) {
+        if (prevBox) {
+            var prevSwLat = prevBox[0][0];
+            var prevNeLat = prevBox[1][0];
+            var swLat = box[0][0];
+            var neLat = box[1][0];
+
+            if (prevSwLat == swLat && prevNeLat == neLat) {
+                prevBox = AnyBoxer.prototype.mergeOneGroup([prevBox, box]);
+            } else {
+                mergedBoxes.push(prevBox);
+                prevBox = box;
+            }
+        } else {
+            prevBox = box;
+        }
+
+    });
+
+    var lastBox = mergedBoxes[mergedBoxes.length-1];
+    var isEquals = (lastBox[0][0] == prevBox[0][0] && lastBox[1][0] == prevBox[1][0]);
+    if (!isEquals) mergedBoxes.push(prevBox);
     return mergedBoxes;
 };
 
