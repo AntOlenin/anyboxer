@@ -41,6 +41,7 @@ AnyBoxer.prototype.getBoxes = function(options) {
  * */
 AnyBoxer.prototype.getlineStringBoxes = function(lineString, fat) {
     var mainBox = this.getMainBox(lineString);
+    this.extendByFat(mainBox, fat);
     var subBoxes = this.getSubBoxes(mainBox, fat);
     var intersectBoxes = this.filterIntersectBoxes(subBoxes, lineString);
     var necessaryBoxes = this.getNecessaryBoxes(intersectBoxes, subBoxes);
@@ -70,6 +71,25 @@ AnyBoxer.prototype.getMainBox = function(lineString) {
         [minLat, minLon],  // sw
         [maxLat, maxLon]   // ne
     ];
+};
+
+/**
+ * Расширяет существующий бокс на значение fat.
+ * */
+AnyBoxer.prototype.extendByFat = function(box, fat) {
+    var sw = box[0];
+    var ne = box[1];
+    var cosCurrentLat = this.cos(sw[0]);
+    var currentLatDegreeKm = cosCurrentLat * this.EQUATOR_DEGREE_KM;
+
+    var fatHeightDegree = fat / this.EQUATOR_DEGREE_KM;
+    var fatWidthDegree  = fat / currentLatDegreeKm;
+
+    sw = [sw[0]-fatHeightDegree, sw[1]-fatWidthDegree];
+    ne = [ne[0]+fatHeightDegree, ne[1]+fatWidthDegree];
+
+    box[0] = sw;
+    box[1] = ne;
 };
 
 /**
