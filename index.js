@@ -56,8 +56,8 @@ AnyBoxer.prototype.getMainBox = function(lineString) {
     var lons = [];
 
     lineString.forEach(function(item) {
-        lats.push( item[1] );
-        lons.push( item[0] );
+        lats.push( item[0] );
+        lons.push( item[1] );
     });
 
     var maxLat = Math.max.apply(Math, lats);
@@ -78,30 +78,32 @@ AnyBoxer.prototype.getMainBox = function(lineString) {
 AnyBoxer.prototype.getSubBoxes = function(mainBox, fat) {
     var mainSw = mainBox[0];
     var mainNe = mainBox[1];
-    var mainNw = [mainNe[0], mainSw[1]];
-    var mainBoxWidth = mainNe[1] - mainNw[1];
-    var mainBoxHeight = mainNw[0] - mainSw[0];
-    var currentLat = mainNe[0];
+    var mainBoxWidth = mainNe[1] - mainSw[1];
+    var mainBoxHeight = mainNe[0] - mainSw[0];
 
-    var mainBoxWidthKm = mainBoxWidth * (this.cos(currentLat) * this.EQUATOR_DEGREE_KM);
+    var cosCurrentLat = this.cos(mainSw[0]);
+    var currentLatDegreeKm = cosCurrentLat * this.EQUATOR_DEGREE_KM;
+
+    var mainBoxWidthKm = mainBoxWidth * currentLatDegreeKm;
     var mainBoxHeightKm = mainBoxHeight * this.EQUATOR_DEGREE_KM;
 
-    var columnAmount = Math.floor(mainBoxWidthKm / fat) + 1;
+    var colAmount = Math.floor(mainBoxWidthKm / fat) + 1;
     var rowAmount = Math.floor(mainBoxHeightKm / fat) + 1;
 
-    var subBoxHeight = (fat / this.EQUATOR_DEGREE_KM);
-    var subBoxWidth  = ( fat / (this.EQUATOR_DEGREE_KM * this.cos(mainSw[0])) );
+    var subBoxHeight = fat / this.EQUATOR_DEGREE_KM;
+    var subBoxWidth  = fat / currentLatDegreeKm;
+
     var subBoxes = [];
 
-    for (var j=0; j<columnAmount; j++) {
+    for (var colIndex=0; colIndex<colAmount; colIndex++) {
         var oneLineSubBoxes = [];
-        for (var k=0; k<rowAmount; k++) {
+        for (var rowIndex=0; rowIndex<=rowAmount; rowIndex++) {
 
             var mainSwLat = mainSw[0];
             var mainSwLon = mainSw[1];
 
-            var horisontalOffset = subBoxHeight * k;
-            var verticalOffset = subBoxWidth * j;
+            var horisontalOffset = subBoxHeight * rowIndex;
+            var verticalOffset = subBoxWidth * colIndex;
 
             var subSwLat = mainSwLat + horisontalOffset;
             var subSwLon = mainSwLon + verticalOffset;
@@ -173,10 +175,10 @@ AnyBoxer.prototype.isIntersectOneSide = function(boxSide, lineStringSide) {
     var ax2 = boxSide[1][0];
     var ay2 = boxSide[1][1];
 
-    var bx1 = lineStringSide[0][1];
-    var by1 = lineStringSide[0][0];
-    var bx2 = lineStringSide[1][1];
-    var by2 = lineStringSide[1][0];
+    var bx1 = lineStringSide[0][0];
+    var by1 = lineStringSide[0][1];
+    var bx2 = lineStringSide[1][0];
+    var by2 = lineStringSide[1][1];
 
     var v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1);
     var v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1);

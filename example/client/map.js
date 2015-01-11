@@ -102,8 +102,8 @@ Map.prototype.convertToServerPath = function(path) {
 Map.prototype.convertToGoogleBoundses = function(boxes) {
     var boundses = [];
     boxes.forEach(function(box) {
-        var sw = new gLatLng(box[0][1], box[0][0]);
-        var ne = new gLatLng(box[1][1], box[1][0]);
+        var sw = new gLatLng(box[0][0], box[0][1]);
+        var ne = new gLatLng(box[1][0], box[1][1]);
         var bounds = new gBounds(sw, ne);
         boundses.push(bounds);
     });

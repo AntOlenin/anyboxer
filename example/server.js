@@ -17,7 +17,7 @@ app.get('/anyboxer', function(req, res) {
         data: {
             lineString: lineString
         },
-        fat: 10,
+        fat: 30,
         split: true
     };
     var boxes = boxer.getBoxes(options);
