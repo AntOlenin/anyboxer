@@ -1,6 +1,6 @@
 {
   "name": "anyboxer",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "npm routeboxer",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "url": "https://github.com/AntOlenin/anyboxer.git"
   },
   "author": "olenin",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/AntOlenin/anyboxer/issues"
   },
