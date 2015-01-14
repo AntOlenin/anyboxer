@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 
 app.use("/js", express.static(__dirname + '/client'));
+app.set('views', __dirname + '/views');
 
 var anyBoxer = require('../index');
 var boxer = new anyBoxer;
