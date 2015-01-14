@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/AntOlenin/anyboxer",
   "dependencies": {
-    "lodash": "^2.4.1"
+    "underscore": "^1.7.0"
   }
 }

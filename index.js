@@ -1,4 +1,4 @@
-var lodash = require('lodash');
+var _ = require('underscore');
 
 function AnyBoxer() {
     this.R = 6378;
@@ -227,7 +227,7 @@ AnyBoxer.prototype.getNecessaryBoxes = function(intersectBoxes, subBoxes) {
         }
     }
 
-    return lodash.uniq(necessaryBoxes);
+    return _.uniq(necessaryBoxes);
 };
 
 AnyBoxer.prototype.pushSiblingsByIndex = function(subBoxes, index, necessaryBoxes) {
@@ -294,7 +294,7 @@ AnyBoxer.prototype.mergeOneVerticalGroup = function(oneGroup) {
     var subGroup = [];
 
     oneGroup = this.sortBySwLon(oneGroup);
-    var lastBox = lodash.last(oneGroup);
+    var lastBox = _.last(oneGroup);
 
     oneGroup.forEach(function (box) {
         if (!firstSubGroupBox) {
@@ -306,7 +306,7 @@ AnyBoxer.prototype.mergeOneVerticalGroup = function(oneGroup) {
             subGroup.push(box);
             firstSubGroupBox = box;
 
-            if (lodash.isEqual( lastBox, box )) {
+            if (_.isEqual( lastBox, box )) {
                 subGroupList.push(subGroup);
             }
 
@@ -334,7 +334,7 @@ AnyBoxer.prototype.isVerticalSibling = function(box1, box2) {
 };
 
 AnyBoxer.prototype.sortBySwLon = function(boxes) {
-    var sorted = lodash.sortBy(boxes, function(box) {
+    var sorted = _.sortBy(boxes, function(box) {
         return box[0][0];
     });
     return sorted;
