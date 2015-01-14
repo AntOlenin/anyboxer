@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/AntOlenin/anyboxer/issues"
   },
-  "homepage": "https://github.com/AntOlenin/anyboxer"
+  "homepage": "https://github.com/AntOlenin/anyboxer",
+  "dependencies": {
+    "lodash": "^2.4.1"
+  }
 }
