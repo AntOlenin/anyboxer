@@ -1,6 +1,6 @@
 {
   "name": "anyboxer",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "npm routeboxer",
   "main": "index.js",
   "scripts": {

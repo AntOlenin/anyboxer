@@ -1,3 +1,5 @@
+var lodash = require('lodash');
+
 function AnyBoxer() {
     this.R = 6378;
     this.EQUATOR_DEGREE_KM = (2 * Math.PI * this.R) / 360;  // ~111км
@@ -122,13 +124,13 @@ AnyBoxer.prototype.getSubBoxes = function(mainBox, fat) {
             var mainSwLat = mainSw[0];
             var mainSwLon = mainSw[1];
 
-            var horisontalOffset = subBoxHeight * rowIndex;
-            var verticalOffset = subBoxWidth * colIndex;
+            var verticalOffset = subBoxHeight * rowIndex;
+            var horisontalOffset = subBoxWidth * colIndex;
 
-            var subSwLat = mainSwLat + horisontalOffset;
-            var subSwLon = mainSwLon + verticalOffset;
-            var subNeLat = mainSwLat + horisontalOffset + subBoxHeight;
-            var subNeLon = mainSwLon + verticalOffset + subBoxWidth;
+            var subSwLat = mainSwLat + verticalOffset;
+            var subSwLon = mainSwLon + horisontalOffset;
+            var subNeLat = mainSwLat + verticalOffset + subBoxHeight;
+            var subNeLon = mainSwLon + horisontalOffset + subBoxWidth;
 
             var subSw = [subSwLat, subSwLon];
             var subNe = [subNeLat, subNeLon];
@@ -225,7 +227,7 @@ AnyBoxer.prototype.getNecessaryBoxes = function(intersectBoxes, subBoxes) {
         }
     }
 
-    return necessaryBoxes;
+    return lodash.uniq(necessaryBoxes);
 };
 
 AnyBoxer.prototype.pushSiblingsByIndex = function(subBoxes, index, necessaryBoxes) {
@@ -258,8 +260,7 @@ AnyBoxer.prototype.getOneByIndex = function(subBoxes, index) {
 
 AnyBoxer.prototype.mergeBoxes = function(necessaryBoxes) {
     var verticalMergedBoxes = this.verticalMergeBoxes(necessaryBoxes);
-    var horisontalMergedBoxes = this.horisontalMergeBoxes(verticalMergedBoxes);
-    return horisontalMergedBoxes;
+    return verticalMergedBoxes;
 };
 
 AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
@@ -277,43 +278,69 @@ AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
 
     keys.forEach(function(key) {
         var oneGroup = groupBoxes[key];
-        var box = AnyBoxer.prototype.mergeOneGroup(oneGroup);
-        mergedBoxes.push(box);
+        var mergedOneGroup = AnyBoxer.prototype.mergeOneVerticalGroup(oneGroup);
+
+        mergedOneGroup.forEach(function(box) {
+            mergedBoxes.push(box);
+        });
     });
 
     return mergedBoxes;
 };
 
-AnyBoxer.prototype.horisontalMergeBoxes = function(boxes) {
-    var mergedBoxes = [];
-    var prevBox = null;
+AnyBoxer.prototype.mergeOneVerticalGroup = function(oneGroup) {
+    var subGroupList = [];
+    var firstSubGroupBox = null;
+    var subGroup = [];
 
-    boxes.forEach(function(box) {
-        if (prevBox) {
-            var prevSwLat = prevBox[0][0];
-            var prevNeLat = prevBox[1][0];
-            var swLat = box[0][0];
-            var neLat = box[1][0];
+    oneGroup = this.sortBySwLon(oneGroup);
+    var lastBox = lodash.last(oneGroup);
 
-            if (prevSwLat == swLat && prevNeLat == neLat) {
-                prevBox = AnyBoxer.prototype.mergeOneGroup([prevBox, box]);
-            } else {
-                mergedBoxes.push(prevBox);
-                prevBox = box;
+    oneGroup.forEach(function (box) {
+        if (!firstSubGroupBox) {
+            subGroup = [];
+            firstSubGroupBox = box;
+            subGroup.push(firstSubGroupBox);
+
+        } else if (AnyBoxer.prototype.isVerticalSibling(firstSubGroupBox, box)) {
+            subGroup.push(box);
+            firstSubGroupBox = box;
+
+            if (lodash.isEqual( lastBox, box )) {
+                subGroupList.push(subGroup);
             }
-        } else {
-            prevBox = box;
-        }
 
+        } else {
+            subGroupList.push(subGroup);
+            subGroup = [];
+            firstSubGroupBox = null;
+        }
     });
 
-    var lastBox = mergedBoxes[mergedBoxes.length-1];
-    var isEquals = (lastBox[0][0] == prevBox[0][0] && lastBox[1][0] == prevBox[1][0]);
-    if (!isEquals) mergedBoxes.push(prevBox);
-    return mergedBoxes;
+    var mergedGroup = [];
+    subGroupList.forEach(function(subGroup) {
+        var mergedSubGroup = AnyBoxer.prototype._merge(subGroup);
+        mergedGroup.push(mergedSubGroup);
+    });
+
+    return mergedGroup;
 };
 
-AnyBoxer.prototype.mergeOneGroup = function(oneGroup) {
+AnyBoxer.prototype.isVerticalSibling = function(box1, box2) {
+    var box1NwLat = box1[1][0];
+    var box2SwLat = box2[0][0];
+    var diff = Math.abs(box1NwLat - box2SwLat);
+    if (diff < 0.001) return true;
+};
+
+AnyBoxer.prototype.sortBySwLon = function(boxes) {
+    var sorted = lodash.sortBy(boxes, function(box) {
+        return box[0][0];
+    });
+    return sorted;
+};
+
+AnyBoxer.prototype._merge = function(oneGroup) {
     var lats = [];
     var lons = [];
 
