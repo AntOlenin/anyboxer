@@ -296,12 +296,16 @@ AnyBoxer.prototype.mergeOneVerticalLine = function(oneGroup) {
     var subLineList = [];
     var subLine = [];
 
+    // Создает подстрочки из соседних (непрерывных) боксов. После forEach
+    // subLineList имеет вид: [ [box, box, box], [subLine], [subLine] ].
     oneGroup.forEach(function(box) {
+        var isSibling = AnyBoxer.prototype.isVerticalSibling;
+
         if (!subLine.length) {
             subLine.push(box);
         }
 
-        else if ( AnyBoxer.prototype.isVerticalSibling(_.last(subLine), box) ) {
+        else if ( isSibling(_.last(subLine), box) ) {
             subLine.push(box);
 
         } else {
@@ -310,16 +314,11 @@ AnyBoxer.prototype.mergeOneVerticalLine = function(oneGroup) {
             subLine.push(box);
         }
     });
-
     subLineList.push(subLine);
 
-    var mergedOneGroup = [];
-    subLineList.forEach(function(subLine) {
-        var mergedSubLine = AnyBoxer.prototype._merge(subLine);
-        mergedOneGroup.push(mergedSubLine);
+    return _.map(subLineList, function(subLine) {
+        return AnyBoxer.prototype._merge(subLine);
     });
-
-    return mergedOneGroup;
 };
 
 AnyBoxer.prototype.isVerticalSibling = function(box1, box2) {
