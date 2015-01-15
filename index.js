@@ -277,8 +277,8 @@ AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
     var mergedBoxes = [];
 
     keys.forEach(function(key) {
-        var oneGroup = groupBoxes[key];
-        var mergedOneGroup = AnyBoxer.prototype.mergeOneVerticalGroup(oneGroup);
+        var oneGroup = AnyBoxer.prototype.sortBySwLon(groupBoxes[key]);
+        var mergedOneGroup = AnyBoxer.prototype.mergeOneVerticalLine(oneGroup);
 
         mergedOneGroup.forEach(function(box) {
             mergedBoxes.push(box);
@@ -288,42 +288,45 @@ AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
     return mergedBoxes;
 };
 
-AnyBoxer.prototype.mergeOneVerticalGroup = function(oneGroup) {
-    var subGroupList = [];
-    var firstSubGroupBox = null;
-    var subGroup = [];
+/**
+ * Объединяет непрерывные боксы лежащие по оси Y (lon).
+ * Принимает массив боксов, возвращает массив объединенных боксов.
+ * */
+AnyBoxer.prototype.mergeOneVerticalLine = function(oneGroup) {
+    var subLineList = [];
+    var firstSubLineBox = null;
+    var subLine = [];
 
-    oneGroup = this.sortBySwLon(oneGroup);
     var lastBox = _.last(oneGroup);
 
     oneGroup.forEach(function (box) {
-        if (!firstSubGroupBox) {
-            subGroup = [];
-            firstSubGroupBox = box;
-            subGroup.push(firstSubGroupBox);
+        if (!firstSubLineBox) {
+            subLine = [];
+            firstSubLineBox = box;
+            subLine.push(firstSubLineBox);
 
-        } else if (AnyBoxer.prototype.isVerticalSibling(firstSubGroupBox, box)) {
-            subGroup.push(box);
-            firstSubGroupBox = box;
+        } else if (AnyBoxer.prototype.isVerticalSibling(firstSubLineBox, box)) {
+            subLine.push(box);
+            firstSubLineBox = box;
 
             if (_.isEqual( lastBox, box )) {
-                subGroupList.push(subGroup);
+                subLineList.push(subLine);
             }
 
         } else {
-            subGroupList.push(subGroup);
-            subGroup = [];
-            firstSubGroupBox = null;
+            subLineList.push(subLine);
+            subLine = [];
+            firstSubLineBox = null;
         }
     });
 
-    var mergedGroup = [];
-    subGroupList.forEach(function(subGroup) {
-        var mergedSubGroup = AnyBoxer.prototype._merge(subGroup);
-        mergedGroup.push(mergedSubGroup);
+    var mergedOneGroup = [];
+    subLineList.forEach(function(subLine) {
+        var mergedSubLine = AnyBoxer.prototype._merge(subLine);
+        mergedOneGroup.push(mergedSubLine);
     });
 
-    return mergedGroup;
+    return mergedOneGroup;
 };
 
 AnyBoxer.prototype.isVerticalSibling = function(box1, box2) {
