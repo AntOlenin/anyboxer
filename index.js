@@ -294,31 +294,24 @@ AnyBoxer.prototype.verticalMergeBoxes = function(boxes) {
  * */
 AnyBoxer.prototype.mergeOneVerticalLine = function(oneGroup) {
     var subLineList = [];
-    var firstSubLineBox = null;
     var subLine = [];
 
-    var lastBox = _.last(oneGroup);
-
-    oneGroup.forEach(function (box) {
-        if (!firstSubLineBox) {
-            subLine = [];
-            firstSubLineBox = box;
-            subLine.push(firstSubLineBox);
-
-        } else if (AnyBoxer.prototype.isVerticalSibling(firstSubLineBox, box)) {
+    oneGroup.forEach(function(box) {
+        if (!subLine.length) {
             subLine.push(box);
-            firstSubLineBox = box;
+        }
 
-            if (_.isEqual( lastBox, box )) {
-                subLineList.push(subLine);
-            }
+        else if ( AnyBoxer.prototype.isVerticalSibling(_.last(subLine), box) ) {
+            subLine.push(box);
 
         } else {
             subLineList.push(subLine);
             subLine = [];
-            firstSubLineBox = null;
+            subLine.push(box);
         }
     });
+
+    subLineList.push(subLine);
 
     var mergedOneGroup = [];
     subLineList.forEach(function(subLine) {
