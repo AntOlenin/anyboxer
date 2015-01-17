@@ -82,6 +82,10 @@ Map.prototype.buildBoxes = function() {
 };
 
 Map.prototype.drawBoxes = function(resp) {
+    if (!resp || !resp.length) {
+        console.warn('Боксов с сервера не пришло ...');
+        return false;
+    }
     var boundses = this.convertToGoogleBoundses(resp);
     boundses.forEach($.proxy(this.drawOneBox, this));
 };

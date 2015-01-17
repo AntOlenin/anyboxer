@@ -12,16 +12,24 @@ app.get('/', function (req, res) {
 });
 
 app.get('/anyboxer', function(req, res) {
-    var lineString = JSON.parse(req.query.path);
+    var path = JSON.parse(req.query.path);
 
-    var options = {
-        data: {
-            lineString: lineString
-        },
-        fat: 5,
-        split: true
+    var data = { "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": path
+                },
+                "properties": {
+                    "fat": 5
+                }
+            },
+        ]
     };
-    var boxes = boxer.getBoxes(options);
+
+    var boxes = boxer.getBoxes(data); // вторым параметром можно будет передать split(boolean)
     return res.send(boxes);
 });
 
