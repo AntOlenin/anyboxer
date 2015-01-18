@@ -49,6 +49,18 @@ app.get('/anyboxer', function(req, res) {
                     "fat": 20
                 }
             },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [
+                        [10,10], [20, 20], [30, 30]
+                    ]
+                },
+                "properties": {
+                    "fat": 40
+                }
+            },
         ]
     };
 
