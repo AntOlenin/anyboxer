@@ -5,7 +5,6 @@ app.use("/js", express.static(__dirname + '/client'));
 app.set('views', __dirname + '/views');
 
 var anyBoxer = require('../index');
-var boxer = new anyBoxer;
 
 app.get('/', function (req, res) {
     res.render('index.jade', {name: 'mi'});
@@ -27,7 +26,7 @@ app.get('/anyboxer', function(req, res) {
                     "coordinates": path
                 },
                 "properties": {
-                    "fat": 2
+                    "fat": 0.4
                 }
             },
             {
@@ -64,12 +63,14 @@ app.get('/anyboxer', function(req, res) {
                 "properties": {
                     "fat": 40
                 }
-            },
+            }
         ]
     };
 
-    var boxes = boxer.getBoxes(data); // вторым параметром можно будет передать split(boolean)
-    return res.send(boxes);
+    var split = false;
+    anyBoxer(data, split, function(err, boxes) {
+        return res.send(boxes);
+    });
 });
 
 var server = app.listen(3000, function() {

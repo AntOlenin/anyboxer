@@ -1,3 +1,3 @@
-var AnyBoxer = require('./lib/anyBoxer');
+var anyBoxer = require('./lib/anyBoxer');
 
-module.exports = AnyBoxer;
+module.exports = anyBoxer;
