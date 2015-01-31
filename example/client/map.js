@@ -26,6 +26,7 @@ Map.prototype.cacheElements = function() {
     this.$newBtn = $('#new');
     this.$helpBar = $('#helpbar');
     this.$calcBtn = $('#calculate');
+    this.$checAsyncBtn = $('#check-async');
 };
 
 Map.prototype.clearIfNeed = function() {
@@ -72,7 +73,13 @@ Map.prototype.buildDirectionsCallback = function(response, status) {
         this.polyline.setPath(this.path);
         this.$calcBtn.show();
         this.$calcBtn.on('click', $.proxy(this.buildBoxes, this));
+        this.$checAsyncBtn.show();
+        this.$checAsyncBtn.on('click', $.proxy(this.checkAsync, this));
     }
+};
+
+Map.prototype.checkAsync = function() {
+    $.get('/check').done($.proxy(function(resp) {console.log(resp)}, this));
 };
 
 Map.prototype.buildBoxes = function() {

@@ -11,6 +11,10 @@ app.get('/', function (req, res) {
     res.render('index.jade', {name: 'mi'});
 });
 
+app.get('/check', function (req, res) {
+    res.send('Операция обработана...');
+});
+
 app.get('/anyboxer', function(req, res) {
     var path = JSON.parse(req.query.path);
 
@@ -23,7 +27,7 @@ app.get('/anyboxer', function(req, res) {
                     "coordinates": path
                 },
                 "properties": {
-                    "fat": 5
+                    "fat": 2
                 }
             },
             {
