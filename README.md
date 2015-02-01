@@ -13,14 +13,22 @@ Usage
 
 ```js
 var anyBoxer = require('anyboxer');
-var boxer = new anyBoxer;
 
-var boxes = boxer.getBoxes(data, split);
+var options = {
+    split: false,
+    reverse: true
+}
+
+anyBoxer(data, options, function(err, boxes) {
+    //
+});
 ```
 
 Where **data** has a [FeatureCollection](http://geojson.org/geojson-spec.html#examples) format.
 
 If **split** is ```true``` the result will be divided. Default **split** is ```false```.
+
+If **reverse** is ```true``` then each ```[lat, lon]``` coordinates will become ```[lon, lat]```.
 
 data example
 -------
