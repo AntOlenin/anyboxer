@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var _ = require('underscore');
 
 app.use("/js", express.static(__dirname + '/client'));
 app.set('views', __dirname + '/views');
@@ -17,6 +18,8 @@ app.get('/check', function (req, res) {
 app.get('/anyboxer', function(req, res) {
     var path = JSON.parse(req.query.path);
 
+    path = _.map(path, function(coords) {return [coords[1], coords[0]]});
+
     var data = { "type": "FeatureCollection",
         "features": [
             {
@@ -26,7 +29,7 @@ app.get('/anyboxer', function(req, res) {
                     "coordinates": path
                 },
                 "properties": {
-                    "fat": 0.4
+                    "fat": 3
                 }
             },
             {
@@ -34,8 +37,8 @@ app.get('/anyboxer', function(req, res) {
                 "geometry": {
                     "type": "MultiLineString",
                     "coordinates": [
-                        [ [0,0], [1,1] ],
-                        [ [0,0], [-1, -1] ]
+                        [ [0,1], [1,1] ],
+                        [ [0,1], [-1, -1] ]
                     ]
                 },
                 "properties": {
@@ -46,7 +49,7 @@ app.get('/anyboxer', function(req, res) {
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [5,5]
+                    "coordinates": [5,15]
                 },
                 "properties": {
                     "fat": 20
@@ -57,7 +60,7 @@ app.get('/anyboxer', function(req, res) {
                 "geometry": {
                     "type": "MultiPoint",
                     "coordinates": [
-                        [10,10], [20, 20], [30, 30]
+                        [10,20], [20, 30]
                     ]
                 },
                 "properties": {
@@ -67,8 +70,12 @@ app.get('/anyboxer', function(req, res) {
         ]
     };
 
-    var split = false;
-    anyBoxer(data, split, function(err, boxes) {
+    var options = {
+        split: false,
+        reverse: true
+    };
+
+    anyBoxer(data, options, function(err, boxes) {
         return res.send(boxes);
     });
 });
