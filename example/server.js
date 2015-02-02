@@ -18,7 +18,7 @@ app.get('/check', function (req, res) {
 app.get('/anyboxer', function(req, res) {
     var path = JSON.parse(req.query.path);
 
-    path = _.map(path, function(coords) {return [coords[1], coords[0]]});
+    var reversePath = _.map(path, function(coords) {return [coords[1], coords[0]]});
 
     var data = { "type": "FeatureCollection",
         "features": [
@@ -26,10 +26,10 @@ app.get('/anyboxer', function(req, res) {
                 "type": "Feature",
                 "geometry": {
                     "type": "LineString",
-                    "coordinates": path
+                    "coordinates": reversePath
                 },
                 "properties": {
-                    "fat": 3
+                    "fat": 4
                 }
             },
             {
