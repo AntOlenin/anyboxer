@@ -29,7 +29,7 @@ app.get('/anyboxer', function(req, res) {
                     "coordinates": reversePath
                 },
                 "properties": {
-                    "fat": 4
+                    "fat": 1
                 }
             },
             {
@@ -37,7 +37,8 @@ app.get('/anyboxer', function(req, res) {
                 "geometry": {
                     "type": "MultiLineString",
                     "coordinates": [
-                        [ [0,1], [1,1] ],
+                        [ [0,1], [1,1] ], // TODO не пашет. разобраться почему
+                        [ [0,1], [1,-1] ],
                         [ [0,1], [-1, -1] ]
                     ]
                 },
