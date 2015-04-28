@@ -82,6 +82,5 @@ app.get('/anyboxer', function(req, res) {
 });
 
 var server = app.listen(3000, function() {
-    var address = server.address();
-    console.log('Example app listening at http://%s:%s', address.address, address.port)
+    console.log('Example app listening at http://localhost:3000')
 });

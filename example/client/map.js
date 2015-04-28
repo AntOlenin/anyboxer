@@ -1,125 +1,120 @@
-var gMaps = google.maps;
-var gPolyline = gMaps.Polyline;
-var gEvent = gMaps.event;
-var addListenerOnce = gEvent.addListenerOnce;
-var gLatLng = gMaps.LatLng;
-var gBounds = gMaps.LatLngBounds;
-var gRectangle = gMaps.Rectangle;
+(function () {
+
+    var gMaps = google.maps,
+        gPolyline = gMaps.Polyline,
+        gEvent = gMaps.event,
+        addListenerOnce = gEvent.addListenerOnce,
+        gLatLng = gMaps.LatLng,
+        gBounds = gMaps.LatLngBounds,
+        gRectangle = gMaps.Rectangle,
+
+        $newBtn = $('#new'),
+        $helpBar = $('#helpbar'),
+        $calcBtn = $('#calculate'),
+        $checAsyncBtn = $('#check-async'),
+
+        mapOptions = {
+            center: new gMaps.LatLng(55.74, 37.61),
+            zoom: 12,
+            mapTypeId: gMaps.MapTypeId.ROADMAP
+        },
+
+        map = new gMaps.Map(document.getElementById("map_canvas"), mapOptions),
+        polyline = new gPolyline({map: map}),
+        polylineOptions = {first: null, last: null, path: null};
+
+    $newBtn.on('click', drawOn);
 
 
-function Map() {
-    var mapOptions = {
-        center: new gMaps.LatLng(50, 12),
-        zoom: 6,
-        mapTypeId: gMaps.MapTypeId.ROADMAP
-    };
-    this.map = new gMaps.Map(document.getElementById("map_canvas"), mapOptions);
-    this.polyline = new gPolyline({map: this.map});
+    function drawOn() {
+        if (polyline) {
+            polyline.setPath([]);
+            $calcBtn.hide();
+        }
 
-    this.cacheElements();
-
-    this.$newBtn.on('click', $.proxy(this.addEvents, this));
-
-}
-
-Map.prototype.cacheElements = function() {
-    this.$newBtn = $('#new');
-    this.$helpBar = $('#helpbar');
-    this.$calcBtn = $('#calculate');
-    this.$checAsyncBtn = $('#check-async');
-};
-
-Map.prototype.clearIfNeed = function() {
-    if (this.polyline) {
-        this.polyline.setPath([]);
-        this.$calcBtn.hide();
+        addListenerOnce(map, 'click', firstClickHandle);
+        map.setOptions({draggableCursor: 'crosshair'});
+        $helpBar.text('Кликни по карте, чтобы поставить первую точку');
     }
-};
 
-Map.prototype.addEvents = function() {
-    this.clearIfNeed();
-    addListenerOnce(this.map, 'click', $.proxy(this.firstClickHandler, this));
-    this.map.setOptions({draggableCursor: 'crosshair'});
-    this.$helpBar.text('Кликни по карте, чтобы поставить первую точку');
-};
-
-Map.prototype.firstClickHandler = function(position) {
-    this.firstPoint = position.latLng;
-    addListenerOnce(this.map, 'click', $.proxy(this.lastClickHandler, this));
-    this.$helpBar.text('Поставь вторую точку, чтобы маршрут создался');
-};
-
-Map.prototype.lastClickHandler = function(position) {
-    this.lastPoint = position.latLng;
-    this.buildDirections();
-    this.map.setOptions({draggableCursor: 'default'});
-    this.$helpBar.text('Нажми new, чтобы начать заново');
-};
-
-Map.prototype.buildDirections = function() {
-    var directionsService = new gMaps.DirectionsService();
-    var request = {
-        origin: this.firstPoint,
-        destination: this.lastPoint,
-        travelMode: gMaps.TravelMode.DRIVING
-    };
-
-    directionsService.route(request, $.proxy(this.buildDirectionsCallback, this));
-};
-
-Map.prototype.buildDirectionsCallback = function(response, status) {
-    if (status == gMaps.DirectionsStatus.OK) {
-        this.path = response.routes[0].overview_path;
-        this.polyline.setPath(this.path);
-        this.$calcBtn.show();
-        this.$calcBtn.on('click', $.proxy(this.buildBoxes, this));
-        this.$checAsyncBtn.show();
-        this.$checAsyncBtn.on('click', $.proxy(this.checkAsync, this));
+    function firstClickHandle(position) {
+        polylineOptions.first = position.latLng;
+        addListenerOnce(map, 'click', lastClickHandle);
+        $helpBar.text('Поставь вторую точку, чтобы маршрут создался');
     }
-};
 
-Map.prototype.checkAsync = function() {
-    $.get('/check').done($.proxy(function(resp) {console.log(resp)}, this));
-};
-
-Map.prototype.buildBoxes = function() {
-    var serverPath = this.convertToServerPath(this.path);
-    var data = {path: JSON.stringify(serverPath)}
-    $.get('/anyboxer', data).done($.proxy(this.drawBoxes, this));
-};
-
-Map.prototype.drawBoxes = function(resp) {
-    if (!resp || !resp.length) {
-        console.warn('Боксов с сервера не пришло ...');
-        return false;
+    function lastClickHandle(position) {
+        polylineOptions.last = position.latLng;
+        buildDirections();
+        map.setOptions({draggableCursor: 'default'});
+        $helpBar.text('Нажми new, чтобы начать заново');
     }
-    var boundses = this.convertToGoogleBoundses(resp);
-    boundses.forEach($.proxy(this.drawOneBox, this));
-};
 
-Map.prototype.drawOneBox = function(bounds) {
-    new gRectangle({map: this.map, bounds: bounds});
-};
+    function buildDirections() {
+        var directionsService = new gMaps.DirectionsService(),
+            request = {
+                origin: polylineOptions.first,
+                destination: polylineOptions.last,
+                travelMode: gMaps.TravelMode.DRIVING
+            };
 
-Map.prototype.convertToServerPath = function(path) {
-    var newPath = [];
-    path.forEach(function(latLng) {
-        var one = [latLng.lat(), latLng.lng()];
-        newPath.push(one);
-    });
-    return newPath;
-};
+        directionsService.route(request, buildDirectionsCallback);
+    }
 
-Map.prototype.convertToGoogleBoundses = function(boxes) {
-    var boundses = [];
-    boxes.forEach(function(box) {
-        var sw = new gLatLng(box[0][0], box[0][1]);
-        var ne = new gLatLng(box[1][0], box[1][1]);
-        var bounds = new gBounds(sw, ne);
-        boundses.push(bounds);
-    });
-    return boundses;
-};
+    function buildDirectionsCallback(response, status) {
+        if (status == gMaps.DirectionsStatus.OK) {
+            polylineOptions.path = response.routes[0].overview_path;
+            polyline.setPath(polylineOptions.path);
+            $calcBtn.show();
+            $calcBtn.on('click', buildBoxes);
+            $checAsyncBtn.show();
+            $checAsyncBtn.on('click', checkAsync);
+        }
+    }
 
+    function buildBoxes() {
+        var serverPath = convertToServerPath(polylineOptions.path),
+            data = {path: JSON.stringify(serverPath)}
+        $.get('/anyboxer', data).done(function (resp) {
+            if (!resp || !resp.length) {
+                console.warn('Боксов с сервера не пришло ...');
+                return false;
+            }
+            drawBoxes(resp);
+        });
+    }
 
-new Map;
+    function drawBoxes(resp) {
+        var boundses = convertToGoogleBoundses(resp);
+        boundses.forEach(function (bounds) {
+            new gRectangle({map: map, bounds: bounds});
+        });
+    }
+
+    function convertToServerPath(path) {
+        var newPath = [];
+        path.forEach(function(latLng) {
+            var one = [latLng.lat(), latLng.lng()];
+            newPath.push(one);
+        });
+        return newPath;
+    }
+
+    function convertToGoogleBoundses(boxes) {
+        var boundses = [];
+        boxes.forEach(function (box) {
+            var sw = new gLatLng(box[0][0], box[0][1]),
+                ne = new gLatLng(box[1][0], box[1][1]),
+                bounds = new gBounds(sw, ne);
+            boundses.push(bounds);
+        });
+        return boundses;
+    }
+
+    function checkAsync() {
+        $.get('/check').done(function (resp) {
+            console.log(resp);
+        });
+    }
+
+}());
