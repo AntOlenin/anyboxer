@@ -53,7 +53,7 @@ app.get('/anyboxer', function(req, res) {
                     "coordinates": [5,15]
                 },
                 "properties": {
-                    "fat": 20
+                    "fat": 2000
                 }
             },
             {
