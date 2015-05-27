@@ -76,9 +76,8 @@ app.get('/anyboxer', function(req, res) {
         reverse: true
     };
 
-    anyBoxer(data, options, function(err, boxes) {
-        return res.send(boxes);
-    });
+    var boxes = anyBoxer(data, options);
+    res.send(boxes);
 });
 
 var server = app.listen(3000, function() {
