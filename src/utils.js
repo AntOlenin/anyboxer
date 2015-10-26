@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
 
-function isTwoSegmentsIntersect(firstSegment, secondSegment) {
+function isTwoLineIntersect(firstSegment, secondSegment) {
   const ax1 = firstSegment[0][0];
   const ay1 = firstSegment[0][1];
   const ax2 = firstSegment[1][0];
@@ -20,6 +20,29 @@ function isTwoSegmentsIntersect(firstSegment, secondSegment) {
   if ((v1*v2<0) && (v3*v4<0)) return true;
 }
 
+function isTwoPolylineIntersect(firstPolyline, secondPolyline) {
+  const firstLines = [];
+  const secondLines = [];
+
+  _.each(firstPolyline, (item, i) => {
+    const side = [firstPolyline[i], firstPolyline[i+1]];
+    if (_.compact(side).length === 2) firstLines.push(side);
+  });
+
+  _.each(secondPolyline, (item, i) => {
+    const side = [secondPolyline[i], secondPolyline[i+1]];
+    if (_.compact(side).length === 2) secondLines.push(side);
+  });
+
+  for (var j=0; j<secondLines.length; j++) {
+    for (var k=0; k<firstLines.length; k++) {
+      if (isTwoLineIntersect(firstLines[k], secondLines[j])) {
+        return true;
+      }
+    }
+  }
+}
+
 
 function cloneDeep(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -34,4 +57,4 @@ function clearMatrix(matrix) {
   });
 }
 
-export default {cloneDeep, isTwoSegmentsIntersect, clearMatrix};
+export default {cloneDeep, isTwoPolylineIntersect, clearMatrix};

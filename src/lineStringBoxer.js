@@ -142,46 +142,9 @@ function isIntersectOneBox(box, coordinates) {
   const [sw, ne] = box;
   const nw = [sw[0], ne[1]];
   const se = [ne[0], sw[1]];
-  const boxVertexesList = [sw, nw, ne, se];
-  const boxSides = [];
-  const lineStringSides = [];
+  const boxVertexesList = [sw, nw, ne, se, sw];
 
-  _.each(boxVertexesList, (item, i) => {
-    const side = [boxVertexesList[i], boxVertexesList[i+1] || boxVertexesList[0]];
-    boxSides.push(side);
-  });
-
-  _.each(coordinates, (item, i) => {
-    const side = [coordinates[i], coordinates[i+1]];
-    if (_.compact(side).length === 2) lineStringSides.push(side);
-  });
-
-  for (var j=0; j<lineStringSides.length; j++) {
-    for (var k=0; k<boxSides.length; k++) {
-      if (isIntersectOneSide(boxSides[k], lineStringSides[j])) {
-        return true;
-      }
-    }
-  }
-}
-
-function isIntersectOneSide(boxSide, lineStringSide) {
-  const ax1 = boxSide[0][0];
-  const ay1 = boxSide[0][1];
-  const ax2 = boxSide[1][0];
-  const ay2 = boxSide[1][1];
-
-  const bx1 = lineStringSide[0][0];
-  const by1 = lineStringSide[0][1];
-  const bx2 = lineStringSide[1][0];
-  const by2 = lineStringSide[1][1];
-
-  const v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1);
-  const v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1);
-  const v3 = (ax2-ax1)*(by1-ay1)-(ay2-ay1)*(bx1-ax1);
-  const v4 = (ax2-ax1)*(by2-ay1)-(ay2-ay1)*(bx2-ax1);
-
-  if ((v1*v2<0) && (v3*v4<0)) return true;
+  return utils.isTwoPolylineIntersect(boxVertexesList, coordinates);
 }
 
 function reverseList(coordinates) {
