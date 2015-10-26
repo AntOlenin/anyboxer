@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import utils from './utils';
 
 const R = 6378;
 const EQUATOR_DEGREE_KM = (2 * Math.PI * R) / 360;
@@ -24,10 +25,10 @@ function getBoxes(lineString, options) {
   const mainBox = getMainBox(coordinates);
   extendByFat(mainBox, fat);
   const subBoxes = getSubBoxes(mainBox, fat);
-  const intersectBoxes = filterIntersectBoxes(subBoxes, coordinates);
-  const necessaryBoxes = getNecessaryBoxes(intersectBoxes, subBoxes);
-
-  return mergeBoxes(necessaryBoxes);
+  const intersectIndexes = getIntersectIndexes(subBoxes, coordinates);
+  const necessaryIndexes = getNecesseryIndexes(intersectIndexes); // with siblings
+  const allBoxes =  getBoxesByMatrix(subBoxes, necessaryIndexes);
+  return _.flatten(allBoxes, true);
 }
 
 function getMainBox(coordinates) {
@@ -86,9 +87,54 @@ function getSubBoxes(box, fat) {
   });
 }
 
-function filterIntersectBoxes(boxes, coordinates) {
-  return _.map(boxes, (oneLineSubBoxes) => {
-    return _.filter(oneLineSubBoxes, (box) => isIntersectOneBox(box, coordinates));
+function getIntersectIndexes(subBoxes, latlngs) {
+  const matrix = utils.clearMatrix(subBoxes);
+
+  _.each(subBoxes, (oneColSubBoxes, colIndex) => {
+    _.each(oneColSubBoxes, (box, rowIndex) => {
+      if (isIntersectOneBox(box, latlngs)) matrix[colIndex][rowIndex] = 1;
+    });
+  });
+
+  return matrix;
+}
+
+function getNecesseryIndexes(matrix) {
+  const clonedMatrix = utils.cloneDeep(matrix);
+
+  _.each(matrix, (arr, colIndex) => {
+    _.each(arr, (item, rowIndex) => {
+      if (item) {
+        addOneSiblingGroup(clonedMatrix, [colIndex, rowIndex]);
+      }
+    });
+  });
+
+  return clonedMatrix;
+}
+
+function addOneSiblingGroup(matrix, [colIndex, rowIndex]) {
+  addSibling(matrix, [colIndex+1, rowIndex+1]);
+  addSibling(matrix, [colIndex-1, rowIndex-1]);
+  addSibling(matrix, [colIndex-1, rowIndex+1]);
+  addSibling(matrix, [colIndex+1, rowIndex-1]);
+  addSibling(matrix, [colIndex, rowIndex+1]);
+  addSibling(matrix, [colIndex, rowIndex-1]);
+  addSibling(matrix, [colIndex+1, rowIndex]);
+  addSibling(matrix, [colIndex-1, rowIndex]);
+}
+
+function addSibling(matrix, [colIndex, rowIndex]) {
+  const col = matrix[colIndex];
+  if (_.isUndefined(col)) return;
+  if (!_.isUndefined(col[rowIndex])) {
+    col[rowIndex] = 1;
+  }
+}
+
+function getBoxesByMatrix(subBoxes, matrix) {
+  return _.map(subBoxes, (col, colIndex) => {
+    return _.filter(col, (item, rowIndex) => matrix[colIndex][rowIndex]);
   });
 }
 
@@ -136,126 +182,6 @@ function isIntersectOneSide(boxSide, lineStringSide) {
   const v4 = (ax2-ax1)*(by2-ay1)-(ay2-ay1)*(bx2-ax1);
 
   if ((v1*v2<0) && (v3*v4<0)) return true;
-}
-
-function getNecessaryBoxes(intersectBoxes, subBoxes) {
-  const necessaryBoxes = [];
-
-  _.each(intersectBoxes, (oneLineIntersectBoxes, i) => {
-    const subLine = subBoxes[i];
-
-    _.each(oneLineIntersectBoxes, (oneIntersectBox) => {
-      necessaryBoxes.push(oneIntersectBox);
-      const index = [i, subLine.indexOf(oneIntersectBox)]; // [1,0] строка и колонка в матрице
-      pushSiblingsByIndex(subBoxes, index, necessaryBoxes);
-    });
-
-  });
-
-  return _.uniq(necessaryBoxes);
-}
-
-function pushSiblingsByIndex(subBoxes, index, necessaryBoxes) {
-  const siblings = [];
-
-  siblings.nbox = getOneByIndex(subBoxes, [index[0]+1, index[1]]);
-  siblings.nebox = getOneByIndex(subBoxes, [index[0]+1, index[1]+1]);
-  siblings.ebox = getOneByIndex(subBoxes, [index[0], index[1]+1]);
-  siblings.sebox = getOneByIndex(subBoxes, [index[0]-1, index[1]+1]);
-  siblings.sbox = getOneByIndex(subBoxes, [index[0]-1, index[1]]);
-  siblings.swbox = getOneByIndex(subBoxes, [index[0]-1, index[1]-1]);
-  siblings.wbox = getOneByIndex(subBoxes, [index[0], index[1]-1]);
-  siblings.nwbox = getOneByIndex(subBoxes, [index[0]+1, index[1]-1]);
-
-  _.each(Object.keys(siblings), (key) => {
-    if (siblings[key]) necessaryBoxes.push(siblings[key]);
-  });
-}
-
-function getOneByIndex(subBoxes, index) {
-  const line = subBoxes[index[0]];
-  if (!line) return false;
-  const box = line[index[1]];
-  if (!box) return false;
-  return box;
-}
-
-function mergeBoxes(necessaryBoxes) {
-  return verticalMergeBoxes(necessaryBoxes);
-}
-
-function verticalMergeBoxes(boxes) {
-  const groupBoxes = {};
-
-  _.each(boxes, (box) => {
-    const swLng = box[0][1];
-    if (!groupBoxes[swLng]) groupBoxes[swLng] = [];
-    groupBoxes[swLng].push(box);
-  });
-
-  const mergedBoxes = [];
-
-  _.each(groupBoxes, (oneGroup, key) => {
-    const sortedOneGroup = sortBySwLon(oneGroup);
-    const mergedOneGroup = mergeOneVerticalLine(sortedOneGroup);
-
-    _.each(mergedOneGroup, (box) => mergedBoxes.push(box));
-  });
-
-  return mergedBoxes;
-}
-
-function mergeOneVerticalLine(oneGroup) {
-  let subLineList = [], subLine = [];
-
-  _.each(oneGroup, (box) => {
-    if (!subLine.length) {
-      subLine.push(box);
-    } else if ( isVerticalSibling(_.last(subLine), box) ) {
-      subLine.push(box);
-    } else {
-      subLineList.push(subLine);
-      subLine = [];
-      subLine.push(box);
-    }
-  });
-
-  subLineList.push(subLine);
-
-  return _.map(subLineList, (subLine) => {
-    return _merge(subLine);
-  });
-}
-
-function isVerticalSibling(box1, box2) {
-  const box1NwLat = box1[1][0];
-  const box2SwLat = box2[0][0];
-  const diff = Math.abs(box1NwLat - box2SwLat);
-  if (diff < 0.001) return true;
-}
-
-function sortBySwLon(boxes) {
-  return _.sortBy(boxes, (box) => box[0][0]);
-}
-
-function _merge(oneGroup) {
-  const lats = [], lons = [];
-
-  _.each(oneGroup, (box) => {
-    lats.push( box[0][0], box[1][0] );
-    lons.push( box[0][1], box[1][1] );
-  });
-
-  const maxLat = Math.max.apply(Math, lats);
-  const maxLon = Math.max.apply(Math, lons);
-
-  const minLat = Math.min.apply(Math, lats);
-  const minLon = Math.min.apply(Math, lons);
-
-  return [
-    [minLat, minLon],  // sw
-    [maxLat, maxLon]   // ne
-  ];
 }
 
 function reverseList(coordinates) {
