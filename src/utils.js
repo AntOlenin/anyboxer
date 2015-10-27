@@ -21,18 +21,18 @@ function isTwoLineIntersect(firstSegment, secondSegment) {
 }
 
 function isTwoPolylineIntersect(firstPolyline, secondPolyline) {
-  const firstLines = [];
-  const secondLines = [];
 
-  _.each(firstPolyline, (item, i) => {
-    const side = [firstPolyline[i], firstPolyline[i+1]];
-    if (_.compact(side).length === 2) firstLines.push(side);
-  });
+  const fn = (polyline) => {
+    let lines = [];
+    _.each(polyline, (item, i) => {
+      let line = [polyline[i], polyline[i+1]];
+      if (_.compact(line).length === 2) lines.push(line);
+    });
+    return lines;
+  }
 
-  _.each(secondPolyline, (item, i) => {
-    const side = [secondPolyline[i], secondPolyline[i+1]];
-    if (_.compact(side).length === 2) secondLines.push(side);
-  });
+  const firstLines = fn(firstPolyline);
+  const secondLines = fn(secondPolyline);
 
   for (var j=0; j<secondLines.length; j++) {
     for (var k=0; k<firstLines.length; k++) {
