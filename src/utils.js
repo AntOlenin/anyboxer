@@ -49,12 +49,17 @@ function cloneDeep(obj) {
 }
 
 function clearMatrix(matrix) {
-  const cloned = cloneDeep(matrix);
-  return _.map(cloned, (arr) => {
-    return _.map(arr, (item) => {
-      return 0;
+  const newMatrix = [];
+
+  _.each(matrix, (col) => {
+    const colMatrix = [];
+    _.each(col, (row) => {
+      colMatrix.push(0);
     });
+    newMatrix.push(colMatrix);
   });
+
+  return newMatrix;
 }
 
 function reverseList(coordsList) {
