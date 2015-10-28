@@ -57,4 +57,23 @@ function clearMatrix(matrix) {
   });
 }
 
-export default {cloneDeep, isTwoPolylineIntersect, clearMatrix};
+function reverseList(coordsList) {
+  return _.map(coordsList, (coords) => reverse(coords));
+}
+
+function reverse(coords) {
+  return [coords[1], coords[0]];
+}
+
+function cosd(degree) {
+  return Math.cos( toRadian(degree) );
+}
+
+function toRadian(num) {
+  return num * Math.PI / 180;
+}
+
+export default {
+  cloneDeep, isTwoPolylineIntersect, clearMatrix, reverse, reverseList,
+  cosd, toRadian
+};

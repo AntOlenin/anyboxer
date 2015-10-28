@@ -20,7 +20,7 @@ function getBoxes(lineString, options) {
   let {coordinates} = lineString;
   const {fat, reverse} = options;
 
-  if (reverse) coordinates = reverseList(coordinates);
+  if (reverse) coordinates = utils.reverseList(coordinates);
 
   const mainBox = getMainBox(coordinates);
   extendByFat(mainBox, fat);
@@ -43,7 +43,7 @@ function getMainBox(coordinates) {
 
 function extendByFat(box, fat) {
   let [sw, ne] = box;
-  const cosCurrentLat = cosd(sw[0]);
+  const cosCurrentLat = utils.cosd(sw[0]);
   const currentLatDegreeKm = cosCurrentLat * EQUATOR_DEGREE_KM;
   const fatHeightDegree = fat / EQUATOR_DEGREE_KM;
   const fatWidthDegree  = fat / currentLatDegreeKm;
@@ -58,7 +58,7 @@ function getSubBoxes(box, fat) {
   const [sw, ne] = box;
   const boxWidth = ne[1] - sw[1];
   const boxHeight = ne[0] - sw[0];
-  const cosCurrentLat = cosd(sw[0]);
+  const cosCurrentLat = utils.cosd(sw[0]);
   const currentLatDegreeKm = cosCurrentLat * EQUATOR_DEGREE_KM;
   const boxWidthKm = boxWidth * currentLatDegreeKm;
   const boxHeightKm = boxHeight * EQUATOR_DEGREE_KM;
@@ -145,18 +145,6 @@ function isIntersectOneBox(box, coordinates) {
   const boxVertexesList = [sw, nw, ne, se, sw];
 
   return utils.isTwoPolylineIntersect(boxVertexesList, coordinates);
-}
-
-function reverseList(coordinates) {
-  return _.map(coordinates, (coords) => [coords[1], coords[0]]);
-}
-
-function cosd(degree) {
-  return Math.cos( toRadian(degree) );
-}
-
-function toRadian(num) {
-  return num * Math.PI / 180;
 }
 
 
