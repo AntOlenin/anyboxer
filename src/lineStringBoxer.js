@@ -22,23 +22,13 @@ function getBoxes(lineString, options) {
 
   if (reverse) coordinates = utils.reverseList(coordinates);
 
-  const mainBox = getMainBox(coordinates);
+  const mainBox = utils.getBoundsByLatLngs(coordinates);
   extendByFat(mainBox, fat);
   const subBoxes = getSubBoxes(mainBox, fat);
   const intersectIndexes = getIntersectIndexes(subBoxes, coordinates);
   const necessaryIndexes = getNecesseryIndexes(intersectIndexes); // with siblings
   const allBoxes =  getBoxesByMatrix(subBoxes, necessaryIndexes);
   return _.flatten(allBoxes, true);
-}
-
-function getMainBox(coordinates) {
-  const lats = _.map(coordinates, (item) => item[0]);
-  const lons = _.map(coordinates, (item) => item[1]);
-
-  const sw = [_.min(lats), _.min(lons)];
-  const ne = [_.max(lats), _.max(lons)];
-
-  return [sw, ne];
 }
 
 function extendByFat(box, fat) {
