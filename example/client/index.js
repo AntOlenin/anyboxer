@@ -16,7 +16,7 @@ const $checAsyncBtn = $('#check-async');
 
 const mapOptions = {
   center: new gMaps.LatLng(55.74, 37.61),
-  zoom: 12,
+  zoom: 7,
   mapTypeId: gMaps.MapTypeId.ROADMAP
 };
 
@@ -78,11 +78,14 @@ function buildDirectionsCallback(response, status) {
 function buildBoxes() {
   var serverPath = convertToServerPath(polylineOptions.path),
     data = {path: JSON.stringify(serverPath)}
+
+  console.time('112')
   $.get('/anyboxer', data).done(function (resp) {
     if (!resp || !resp.length) {
       console.warn('Боксов с сервера не пришло ...');
       return false;
     }
+    console.timeEnd('112')
     drawBoxes(resp);
   });
 }

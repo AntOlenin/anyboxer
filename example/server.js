@@ -32,42 +32,42 @@ app.get('/anyboxer', function(req, res) {
                     "fat": 1
                 }
             },
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "MultiLineString",
-                    "coordinates": [
-                        [ [0,1], [1,1] ], // TODO не пашет. разобраться почему
-                        [ [0,1], [1,-1] ],
-                        [ [0,1], [-1, -1] ]
-                    ]
-                },
-                "properties": {
-                    "fat": 5
-                }
-            },
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [5,15]
-                },
-                "properties": {
-                    "fat": 2000
-                }
-            },
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "MultiPoint",
-                    "coordinates": [
-                        [10,20], [20, 30]
-                    ]
-                },
-                "properties": {
-                    "fat": 40
-                }
-            }
+            //{
+            //    "type": "Feature",
+            //    "geometry": {
+            //        "type": "MultiLineString",
+            //        "coordinates": [
+            //            [ [0,1], [1,1] ], // TODO не пашет. разобраться почему
+            //            [ [0,1], [1,-1] ],
+            //            [ [0,1], [-1, -1] ]
+            //        ]
+            //    },
+            //    "properties": {
+            //        "fat": 5
+            //    }
+            //},
+            //{
+            //    "type": "Feature",
+            //    "geometry": {
+            //        "type": "Point",
+            //        "coordinates": [5,15]
+            //    },
+            //    "properties": {
+            //        "fat": 2000
+            //    }
+            //},
+            //{
+            //    "type": "Feature",
+            //    "geometry": {
+            //        "type": "MultiPoint",
+            //        "coordinates": [
+            //            [10,20], [20, 30]
+            //        ]
+            //    },
+            //    "properties": {
+            //        "fat": 40
+            //    }
+            //}
         ]
     };
 

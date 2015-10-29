@@ -1,6 +1,26 @@
 import _ from 'underscore';
 
 
+function getBoundsByLatLngs(latlngs) {
+  const lats = _.map(latlngs, (item) => item[0]); //use zip
+  const lons = _.map(latlngs, (item) => item[1]);
+
+  const sw = [_.min(lats), _.min(lons)];
+  const ne = [_.max(lats), _.max(lons)];
+
+  return [sw, ne];
+}
+
+function isPointInBounds(bounds, latlng) {
+  const [sw, ne] = bounds;
+  const [lat, lng] = latlng;
+
+  const a = lat >= sw[0] && lng >= sw[1];
+  const b = lat <= ne[0] && lng <= ne[1];
+
+  return a && b;
+}
+
 function isTwoLineIntersect(firstSegment, secondSegment) {
   const ax1 = firstSegment[0][0];
   const ay1 = firstSegment[0][1];
@@ -62,6 +82,25 @@ function clearMatrix(matrix) {
   return newMatrix;
 }
 
+function splitLatLngs(latlngs, maxLength=50) {
+  const latlngsList = [];
+  let chunk = []
+
+  for (let i=0; i<latlngs.length; i++) {
+    if (chunk.length >= maxLength) {
+      let lastItem = _.last(chunk);
+      latlngsList.push(chunk);
+      chunk = [];
+      chunk.push(lastItem);
+    }
+    chunk.push(latlngs[i]);
+  }
+
+  if (chunk.length >= 2) latlngsList.push(chunk);
+
+  return latlngsList;
+}
+
 function reverseList(coordsList) {
   return _.map(coordsList, (coords) => reverse(coords));
 }
@@ -80,5 +119,5 @@ function toRadian(num) {
 
 export default {
   cloneDeep, isTwoPolylineIntersect, clearMatrix, reverse, reverseList,
-  cosd, toRadian
+  cosd, toRadian, splitLatLngs, getBoundsByLatLngs, isPointInBounds
 };

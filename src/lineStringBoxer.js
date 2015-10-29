@@ -89,11 +89,17 @@ function getSubBoxes(box, fat) {
 
 function getIntersectIndexes(subBoxes, latlngs) {
   const matrix = utils.clearMatrix(subBoxes);
+  const splittedLatLngs = utils.splitLatLngs(latlngs, 50);
 
-  _.each(subBoxes, (oneColSubBoxes, colIndex) => {
-    _.each(oneColSubBoxes, (box, rowIndex) => {
-      if (isIntersectOneBox(box, latlngs)) matrix[colIndex][rowIndex] = 1;
+  _.each(splittedLatLngs, (chunkLatLngs) => {
+    const chunkBounds = utils.getBoundsByLatLngs(chunkLatLngs);
+
+    _.each(subBoxes, (oneColSubBoxes, colIndex) => {
+      _.each(oneColSubBoxes, (box, rowIndex) => {
+        if (isIntersectOneBox(box, chunkLatLngs, chunkBounds)) matrix[colIndex][rowIndex] = 1;
+      });
     });
+
   });
 
   return matrix;
@@ -138,14 +144,31 @@ function getBoxesByMatrix(subBoxes, matrix) {
   });
 }
 
-function isIntersectOneBox(box, coordinates) {
+function isIntersectOneBox(box, coordinates, bounds) {
   const [sw, ne] = box;
   const nw = [sw[0], ne[1]];
   const se = [ne[0], sw[1]];
   const boxVertexesList = [sw, nw, ne, se, sw];
 
-  return utils.isTwoPolylineIntersect(boxVertexesList, coordinates);
+  if (_isBoxInBounce(box, bounds)) return utils.isTwoPolylineIntersect(boxVertexesList, coordinates);
 }
 
+function _isBoxInBounce(box, bounds) {
+  const [sw, ne] = box;
+  const nw = [sw[0], ne[1]];
+  const se = [ne[0], sw[1]];
+
+  const [sw2, ne2] = bounds;
+  const nw2 = [sw2[0], ne2[1]];
+  const se2 = [ne2[0], sw2[1]];
+
+  const boxVertexesList = [sw, nw, ne, se, sw];
+  const boundsVertexesList = [sw2, nw2, ne2, se2, sw2];
+
+  const fn = utils.isPointInBounds
+  const cond1 = (fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se))
+
+  return cond1 || utils.isTwoPolylineIntersect(boxVertexesList, boundsVertexesList)
+}
 
 export default getBoxes;
