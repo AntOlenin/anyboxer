@@ -155,10 +155,10 @@ function _isBoxInBounce(box, bounds) {
   const boxVertexesList = [sw, nw, ne, se, sw];
   const boundsVertexesList = [sw2, nw2, ne2, se2, sw2];
 
-  const fn = utils.isPointInBounds
-  const cond1 = (fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se))
+  const fn = utils.isPointInBounds;
+  const cond1 = (fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se));
 
-  return cond1 || utils.isTwoPolylineIntersect(boxVertexesList, boundsVertexesList)
+  return cond1;
 }
 
 export default getBoxes;
