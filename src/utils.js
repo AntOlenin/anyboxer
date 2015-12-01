@@ -40,29 +40,24 @@ function isTwoLineIntersect(firstSegment, secondSegment) {
   if ((v1*v2<0) && (v3*v4<0)) return true;
 }
 
-function isTwoPolylineIntersect(firstPolyline, secondPolyline) {
-
-  const fn = (polyline) => {
-    let lines = [];
-    _.each(polyline, (item, i) => {
-      let line = [polyline[i], polyline[i+1]];
-      if (_.compact(line).length === 2) lines.push(line);
-    });
-    return lines;
-  }
-
-  const firstLines = fn(firstPolyline);
-  const secondLines = fn(secondPolyline);
-
-  for (var j=0; j<secondLines.length; j++) {
-    for (var k=0; k<firstLines.length; k++) {
-      if (isTwoLineIntersect(firstLines[k], secondLines[j])) {
+function isIntersectBox(boxSegments, polylineSegments) {
+  for (var j=0; j<polylineSegments.length; j++) {
+    for (var k=0; k<boxSegments.length; k++) {
+      if (isTwoLineIntersect(boxSegments[k], polylineSegments[j])) {
         return true;
       }
     }
   }
 }
 
+function getPolylineSegments(polyline) {
+  let lines = [];
+  _.each(polyline, (item, i) => {
+    let line = [polyline[i], polyline[i+1]];
+    if (_.compact(line).length === 2) lines.push(line);
+  });
+  return lines;
+}
 
 function cloneDeep(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -118,6 +113,6 @@ function toRadian(num) {
 }
 
 export default {
-  cloneDeep, isTwoPolylineIntersect, clearMatrix, reverse, reverseList,
-  cosd, toRadian, splitLatLngs, getBoundsByLatLngs, isPointInBounds
+  cloneDeep, isIntersectBox, clearMatrix, reverse, reverseList,
+  cosd, toRadian, splitLatLngs, getBoundsByLatLngs, isPointInBounds, getPolylineSegments
 };
