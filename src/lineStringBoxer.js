@@ -22,26 +22,12 @@ function getBoxes(lineString, options) {
 
   if (reverse) coordinates = utils.reverseList(coordinates);
 
-  const mainBox = utils.getBoundsByLatLngs(coordinates);
-  extendByFat(mainBox, fat);
+  const mainBox = utils.getBoundsByLatLngs(coordinates, fat);
   const subBoxes = getSubBoxes(mainBox, fat);
   const intersectIndexes = getIntersectIndexes(subBoxes, coordinates);
   const necessaryIndexes = getNecesseryIndexes(intersectIndexes); // with siblings
   const allBoxes =  getBoxesByMatrix(subBoxes, necessaryIndexes);
   return _.flatten(allBoxes, true);
-}
-
-function extendByFat(box, fat) {
-  let [sw, ne] = box;
-  const cosCurrentLat = utils.cosd(sw[0]);
-  const currentLatDegreeKm = cosCurrentLat * EQUATOR_DEGREE_KM;
-  const fatHeightDegree = fat / EQUATOR_DEGREE_KM;
-  const fatWidthDegree  = fat / currentLatDegreeKm;
-
-  sw = [sw[0]-fatHeightDegree, sw[1]-fatWidthDegree];
-  ne = [ne[0]+fatHeightDegree, ne[1]+fatWidthDegree];
-
-  box[0] = sw; box[1] = ne;
 }
 
 function getSubBoxes(box, fat) {

@@ -1,14 +1,27 @@
 import _ from 'underscore';
 
+const R = 6378;
+const EQUATOR_DEGREE_KM = (2 * Math.PI * R) / 360;
 
-function getBoundsByLatLngs(latlngs) {
+
+function getBoundsByLatLngs(latlngs, fat) {
   const lats = _.map(latlngs, (item) => item[0]); //use zip
   const lons = _.map(latlngs, (item) => item[1]);
 
   const sw = [_.min(lats), _.min(lons)];
   const ne = [_.max(lats), _.max(lons)];
 
-  return [sw, ne];
+  if (!fat) return [sw, ne];
+
+  const cosCurrentLat = cosd(sw[0]);
+  const currentLatDegreeKm = cosCurrentLat * EQUATOR_DEGREE_KM;
+  const fatHeightDegree = fat / EQUATOR_DEGREE_KM;
+  const fatWidthDegree  = fat / currentLatDegreeKm;
+
+  const fatSw = [sw[0]-fatHeightDegree, sw[1]-fatWidthDegree];
+  const fatNe = [ne[0]+fatHeightDegree, ne[1]+fatWidthDegree];
+
+  return [fatSw, fatNe];
 }
 
 function isPointInBounds(bounds, latlng) {
