@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import anyBoxer from './../../lib/anyBoxer';
+import anyBoxer from './../../src/anyBoxer';
 
 const gMaps = google.maps;
 const gPolyline = gMaps.Polyline;
@@ -108,7 +108,9 @@ function buildBoxesClient() {
     ]
   }
 
+  console.time('client')
   const boxes = anyBoxer(data, {reverse: true});
+  console.timeEnd('client')
   drawBoxes(boxes);
 }
 

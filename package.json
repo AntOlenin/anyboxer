@@ -6,7 +6,7 @@
   "scripts": {
     "build": "babel --optional reactCompat src --out-dir lib",
     "watch": "babel -w --optional reactCompat src --out-dir lib",
-    "watch-client": "webpack -w --colors --progress"
+    "watch-example": "webpack -w --colors --progress"
   },
   "repository": {
     "type": "git",
