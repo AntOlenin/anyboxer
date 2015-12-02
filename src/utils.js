@@ -53,7 +53,13 @@ function isTwoLineIntersect(firstSegment, secondSegment) {
   if ((v1*v2<0) && (v3*v4<0)) return true;
 }
 
-function isIntersectBox(boxSegments, polylineSegments) {
+function isTwoPolylineIntersect(poly1, poly2) {
+  const segments1 = getPolylineSegments(poly1);
+  const segments2 = getPolylineSegments(poly2);
+  return isIntersectSegments(segments1, segments2);
+}
+
+function isIntersectSegments(boxSegments, polylineSegments) {
   for (var j=0; j<polylineSegments.length; j++) {
     for (var k=0; k<boxSegments.length; k++) {
       if (isTwoLineIntersect(boxSegments[k], polylineSegments[j])) {
@@ -126,6 +132,6 @@ function toRadian(num) {
 }
 
 export default {
-  cloneDeep, isIntersectBox, clearMatrix, reverse, reverseList,
+  cloneDeep, isIntersectSegments, clearMatrix, reverse, reverseList, isTwoPolylineIntersect,
   cosd, toRadian, splitLatLngs, getBoundsByLatLngs, isPointInBounds, getPolylineSegments
 };

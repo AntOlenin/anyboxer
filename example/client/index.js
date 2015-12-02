@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import anyBoxer from './../../src/anyBoxer';
+import {mkad, mkad2} from './data';
 
 const gMaps = google.maps;
 const gPolyline = gMaps.Polyline;
@@ -65,6 +66,7 @@ function buildDirections() {
 function buildDirectionsCallback(response, status) {
   if (status == gMaps.DirectionsStatus.OK) {
     polylineOptions.path = response.routes[0].overview_path;
+    //polylineOptions.path = _.map( mkad2, (coords) => new gMaps.LatLng(coords[1], coords[0]) );
     polyline.setPath(polylineOptions.path);
     $calcBtn.show();
     $calcBtn.on('click', buildBoxes);

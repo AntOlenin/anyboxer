@@ -178,7 +178,7 @@ function isIntersectOneBox(box, chunckSegments, bounds) {
   if (!_isBoxInBounce(box, bounds)) return false;
 
   const boxSegments = utils.getPolylineSegments(boxVertexesList);
-  return utils.isIntersectBox(boxSegments, chunckSegments);
+  return utils.isIntersectSegments(boxSegments, chunckSegments);
 }
 
 function _isBoxInBounce(box, bounds) {
@@ -190,11 +190,16 @@ function _isBoxInBounce(box, bounds) {
   const nw2 = [sw2[0], ne2[1]];
   const se2 = [ne2[0], sw2[1]];
 
+  const boxVertexesList = [sw, nw, ne, se, sw];
+  const boundsVertexesList = [sw2, nw2, ne2, se2, sw2];
+
   const fn = utils.isPointInBounds;
-  return (
+  const cond1 = (
     fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se) ||
     fn(box, sw2) || fn(box, ne2) || fn(box, nw2) || fn(box, se2)
   );
+
+  return cond1 || utils.isTwoPolylineIntersect(boxVertexesList, boundsVertexesList);
 }
 
 export default getBoxes;
