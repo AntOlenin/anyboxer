@@ -27,7 +27,8 @@ function getBoxes(lineString, options) {
   const intersectIndexes = getIntersectIndexes(subBoxes, coordinates);
   const necessaryIndexes = getNecesseryIndexes(intersectIndexes); // with siblings
   const allBoxes =  getBoxesByMatrix(subBoxes, necessaryIndexes);
-  return _.flatten(allBoxes, true);
+  const mergedBoxes = getMergedBoxes(allBoxes, necessaryIndexes);
+  return _.flatten(mergedBoxes, true);
 }
 
 function getSubBoxes(box, fat) {
@@ -69,7 +70,6 @@ function getIntersectIndexes(subBoxes, latlngs) {
 
   _.each(splittedLatLngs, (chunkLatLngs) => {
     const chunkBounds = utils.getBoundsByLatLngs(chunkLatLngs);
-
     const chunkSegments = utils.getPolylineSegments(chunkLatLngs);
 
     _.each(subBoxes, (oneColSubBoxes, colIndex) => {
@@ -95,6 +95,53 @@ function getNecesseryIndexes(matrix) {
   });
 
   return clonedMatrix;
+}
+
+function getMergedBoxes(boxes, matrix) {
+  const merged = [];
+  const allMergedLengths = getAllMergedLengths(matrix)
+
+  for (let i=0; i<boxes.length; i++) {
+    const oneColMerged = [];
+    const oneColBoxes = _.clone(boxes[i]);
+    const oneColLengths = allMergedLengths[i];
+
+    _.each(oneColLengths, (length) => {
+      const group = oneColBoxes.splice(0, length);
+      const mergedGroup = [ _.first(group)[0], _.last(group)[1] ];
+      oneColMerged.push(mergedGroup);
+    });
+
+    merged.push(oneColMerged);
+  }
+
+  return merged;
+}
+
+function getAllMergedLengths(matrix) {
+  const allMergedLengths = [];
+
+  _.each(matrix, (col) => {
+    const сolMergedLengths = [];
+    let tempLength = 0;
+
+    _.each(col, (one) => {
+      if (one) {
+        tempLength ++
+      } else {
+        if (tempLength) {
+          сolMergedLengths.push(tempLength);
+          tempLength = 0;
+        }
+      }
+    });
+
+    if (tempLength) сolMergedLengths.push(tempLength);
+    allMergedLengths.push(сolMergedLengths);
+
+  });
+
+  return allMergedLengths;
 }
 
 function addOneSiblingGroup(matrix, [colIndex, rowIndex]) {
@@ -143,13 +190,11 @@ function _isBoxInBounce(box, bounds) {
   const nw2 = [sw2[0], ne2[1]];
   const se2 = [ne2[0], sw2[1]];
 
-  const boxVertexesList = [sw, nw, ne, se, sw];
-  const boundsVertexesList = [sw2, nw2, ne2, se2, sw2];
-
   const fn = utils.isPointInBounds;
-  const cond1 = (fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se));
-
-  return cond1;
+  return (
+    fn(bounds, sw) || fn(bounds, ne) || fn(bounds, nw) || fn(bounds, se) ||
+    fn(box, sw2) || fn(box, ne2) || fn(box, nw2) || fn(box, se2)
+  );
 }
 
 export default getBoxes;
