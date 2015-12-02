@@ -199,7 +199,21 @@ function _isBoxInBounce(box, bounds) {
     fn(box, sw2) || fn(box, ne2) || fn(box, nw2) || fn(box, se2)
   );
 
+  if (_canPassCheckIntersect(box, bounds)) return cond1;
   return cond1 || utils.isTwoPolylineIntersect(boxVertexesList, boundsVertexesList);
+}
+
+function _canPassCheckIntersect(box, bounds) {
+  const latDeltaBox = box[1][0] - box[0][0];
+  const lngDeltaBox = box[1][1] - box[0][1];
+
+  const latDeltaBounds = bounds[1][0] - bounds[0][0];
+  const lngDeltaBounds = bounds[1][1] - bounds[0][1];
+
+  const cond1 = latDeltaBounds / latDeltaBox > 2;
+  const cond2 = lngDeltaBounds / lngDeltaBox > 2;
+
+  return cond1 && cond2;
 }
 
 export default getBoxes;
